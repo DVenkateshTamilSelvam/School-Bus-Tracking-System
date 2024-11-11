@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     marginTop: 150,
     marginLeft: 20,
     backgroundColor: '#7BB8FF',
-    zIndex: -1
+    zIndex: -2
   },
   smallCircle: {
     position: 'absolute',

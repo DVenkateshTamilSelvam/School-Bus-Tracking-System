@@ -20,6 +20,7 @@ import AttendanceRegisterScreen from './screens/AttendanceRegisterScreen';
 import Parenthome from './screens/Parenthome';
 import EditAttendantScreen from './screens/EditAttendantScreen';
 import EditStudentScreen from './screens/EditStudentScreen';
+import HelpPage from './screens/HelpPage';
 
 const Stack = createStackNavigator();
 
@@ -43,6 +44,7 @@ const AppNavigator = () => {
         <Stack.Screen name="ManageRoute" component={ManageRoute}/>
         <Stack.Screen name="RouteProfile" component={RouteProfile}/>
         <Stack.Screen name="ARS" component={AttendanceRegisterScreen}/>
+        <Stack.Screen name="InstructionsScreen" component={HelpPage}/>
         <Stack.Screen name="PH" component={Parenthome}/>
         <Stack.Screen name="EditAttendantScreen" component={EditAttendantScreen}/>
         <Stack.Screen name="EditStudentScreen" component={EditStudentScreen}/>
