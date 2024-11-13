@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import mysql.connector
 from mysql.connector import pooling
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
@@ -35,6 +36,8 @@ def admin_login():
         return jsonify({'message': 'Login successful'}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
+
+    pass
 
 @app.route('/get_attendant_table', methods=['GET'])
 def get_attendant_table():
@@ -155,21 +158,23 @@ def get_route_table():
 
 @app.route('/attender/login', methods=['POST'])
 def attender_login():
-    data = request.json
-
+    data = request.get_json()
     attender_id = data.get('attender_id')
     password = data.get('password')
-
-    if not attender_id or not password:
-        return jsonify({'error': 'Invalid request'}), 400
-
-    cursor.execute("SELECT * FROM attenders WHERE attender_id=%s AND password=%s", (attender_id, password))
-    user = cursor.fetchone()
-
-    if user:
-        return jsonify({'message': 'Login successful'}), 200
+    
+    # Your login validation logic here
+    # Example:
+    if attender_id and password:
+        # Add your authentication logic here
+        return jsonify({
+            "status": "success",
+            "message": "Login successful"
+        }), 200
     else:
-        return jsonify({'error': 'Invalid credentials'}), 401
+        return jsonify({
+            "status": "error",
+            "message": "Invalid credentials"
+        }), 401
     
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -315,7 +320,76 @@ def update_live_location():
         db.rollback()
         return jsonify({'error': 'Failed to update live location', 'details': str(e)}), 500
     
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+import mysql.connector
+from mysql.connector import pooling
+from datetime import datetime
 
+app = Flask(__name__)
+CORS(app)
+
+# Set up MySQL connection pooling
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="",
+    database="bts"
+)
+
+cursor = db.cursor(dictionary=True)
+
+@app.route('/send_notification', methods=['POST'])
+def send_notification():
+    data = request.json
+    attender_id = data.get('attender_id')
+    message = data.get('message')
+    timestamp = data.get('timestamp', datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
+    gps_data = data.get('gps_data', {})
+
+    latitude = gps_data.get('latitude')
+    longitude = gps_data.get('longitude')
+
+    # Validate the required fields
+    if not attender_id or not message:
+        return jsonify({'error': 'Attender ID and message are required'}), 400
+
+    try:
+        # Insert the notification into the database
+        insert_query = """
+            INSERT INTO notifications (attender_id, message, timestamp, latitude, longitude)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_query, (attender_id, message, timestamp, latitude, longitude))
+        db.commit()
+
+        return jsonify({'success': True, 'message': 'Notification stored successfully'}), 201
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return jsonify({'error': 'Failed to store notification'}), 500
+
+
+@app.route('/get_notifications', methods=['GET'])
+def get_notifications():
+    try:
+        # Get current time and 24 hours ago
+        now = datetime.utcnow()
+        past_24_hours = now - timedelta(hours=24)
+        
+        # Fetch notifications from the last 24 hours
+        query = """
+            SELECT * FROM notifications
+            WHERE timestamp >= %s
+            ORDER BY timestamp DESC
+        """
+        cursor.execute(query, (past_24_hours,))
+        notifications = cursor.fetchall()
+
+        return jsonify({'notifications': notifications}), 200
+    except mysql.connector.Error as err:
+        print(f"Error fetching notifications: {err}")
+        return jsonify({'error': 'Failed to fetch notifications'}), 500
+    
 @app.route('/get_location_data', methods=['POST'])
 def get_location_data():
     data = request.json

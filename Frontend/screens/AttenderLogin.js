@@ -5,18 +5,24 @@ import { AnnotationContextImpl } from 'twilio/lib/rest/insights/v1/call/annotati
 
 const { width, height } = Dimensions.get('window');
 
-const AdminLogin = ({ navigation }) => {
+const AttenderLogin = ({ navigation }) => {
   const [attender_id, setAttender_id] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const handleLogin = async () => {
     try {
       const response = await axios.post('/attender/login', { attender_id, password });
-      console.log(response.data);
-      navigation.replace('AHS', {attender_id});
+      if (response.data.status === 'success') {
+        console.log('Login successful:', response.data);
+        navigation.replace('AHS', {attender_id});
+      } else {
+        setErrorMessage(response.data.message);
+      }
     } catch (error) {
-      console.error('Login error:', error.response?.data || error.message);
-      setErrorMessage('Invalid credentials. Please try again.');
+      console.error('Full error:', error);
+      console.error('Response data:', error.response?.data);
+      console.error('Response status:', error.response?.status);
+      setErrorMessage('Login failed. Please try again.');
     }
   };
 
@@ -142,4 +148,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default AdminLogin;
+export default AttenderLogin;

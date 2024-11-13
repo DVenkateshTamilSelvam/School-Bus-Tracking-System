@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Button, Modal, TextInput } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import axios from '../component/axiosConfig'; // Import Axios for API requests
+import { MapPin } from 'lucide-react-native'; // For location icon
 
 const LoadingBar = ({ visible }) => (
   <View style={styles.loadingContainer}>
@@ -14,8 +15,49 @@ const AttendantHomeScreen = ({ navigation, route }) => {
   const [isLiveLocationOn, setLiveLocationOn] = useState(false);
   const [location, setLocation] = useState(null);
   const [isLoading, setLoading] = useState(false);
-  const { attender_id } = route.params; // Assuming you also receive the user ID
+  const { attender_id } = route.params; 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const [notificationSent, setNotificationSent] = useState(false); // For success message
+  const [notifications, setNotifications] = useState([]);
 
+  const openModal = () => {
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setInputText('');
+  };
+
+  const handleSend = async () => {
+    try {
+      if (!inputText) {
+        console.warn("Please enter a message.");
+        return;
+      }
+  
+      const timestamp = new Date().toISOString(); // Current timestamp
+      const data = {
+        attender_id,
+        message: inputText,
+        timestamp,
+        gps_data: location ? {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude
+        } : null
+      };
+  
+      // Send data to the backend API endpoint
+      await axios.post('/send_notification', data);
+  
+      console.log("Notification sent to server:", data);
+      closeModal(); // Close modal after sending
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  };
+  
   useEffect(() => {
     const startLocationTracking = async () => {
       try {
@@ -142,6 +184,36 @@ const AttendantHomeScreen = ({ navigation, route }) => {
       <TouchableOpacity style={styles.button} onPress={handleARS}>
         <Text style={styles.buttonText}>Attendance</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.greenbutton} onPress={openModal}>
+        <Text style={styles.buttonText}>Send Notification</Text>
+      </TouchableOpacity>
+
+      
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your message"
+              value={inputText}
+              onChangeText={setInputText}
+              placeholderTextColor={"black"}
+            />
+            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+              <Text style={styles.sendButtonText}>Send</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -173,6 +245,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 30,
   },
+  greenbutton: {
+    backgroundColor: "#4CAF50",
+    paddingHorizontal: 35,
+    paddingVertical: 18,
+    borderRadius: 55,
+    marginTop: 10,
+    marginBottom: 30,
+  },
   buttonText: {
     color: 'white',
     fontSize: 18,
@@ -198,6 +278,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'black',
   },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  input: {
+    width: '100%',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    padding: 10,
+    marginBottom: 20,
+    color: 'black',
+    borderRadius: 5,
+  },
+  sendButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  sendButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    marginTop: 10,
+  },
+  closeButtonText: {
+    color: '#555',
+  }
 });
 
 export default AttendantHomeScreen;
