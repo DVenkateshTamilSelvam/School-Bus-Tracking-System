@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Button, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, Modal, TextInput } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import axios from '../component/axiosConfig'; // Import Axios for API requests
@@ -121,6 +121,20 @@ const AttendantHomeScreen = ({ navigation, route }) => {
   };
 
   useEffect(() => {
+    // Fetch notifications on component mount
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get('/get_notifications');
+        setNotifications(response.data.notifications);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications(); // Call on mount
+  }, [notificationSent]); // Fetch new data when notification is sent
+
+  useEffect(() => {
     if (isLiveLocationOn && location) {
       const intervalId = setInterval(() => {
         sendLocationToServer(location);
@@ -158,6 +172,24 @@ const AttendantHomeScreen = ({ navigation, route }) => {
     navigation.navigate('ARS');
   };
 
+  const navigateToLocation = (latitude, longitude) => {
+    // Navigate to MapScreen and pass coordinates
+    navigation.navigate('Map', { latitude, longitude });
+  };
+  const renderNotificationItem = ({ item }) => {
+    return (
+      <View style={styles.notificationItem}>
+        <Text style={styles.notificationMessage}>{item.message}</Text>
+        <Text style={styles.notificationTimestamp}>{item.timestamp}</Text>
+        {item.latitude && item.longitude && (
+          <TouchableOpacity onPress={() => navigateToLocation(item.latitude, item.longitude)}>
+            <MapPin size={20} color="black" />
+            <Text style={styles.notificationLocation}>View on Map</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>Welcome, {attender_id}!</Text>
@@ -189,7 +221,13 @@ const AttendantHomeScreen = ({ navigation, route }) => {
         <Text style={styles.buttonText}>Send Notification</Text>
       </TouchableOpacity>
 
-      
+      {notificationSent && <Text style={styles.successMessage}>Notification sent successfully!</Text>}
+      <FlatList
+        data={notifications}
+        renderItem={renderNotificationItem}
+        keyExtractor={(item) => item.id.toString()}
+      />
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -316,7 +354,32 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     color: '#555',
-  }
+  },
+
+  successMessage:{
+  fontSize: 16,
+  color: 'green',
+  marginTop: 10,
+},
+notificationItem: {
+  padding: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: '#ccc',
+  marginBottom: 10,
+},
+notificationMessage: {
+  fontSize: 16,
+  color: 'black',
+},
+notificationTimestamp: {
+  fontSize: 12,
+  color: 'gray',
+},
+notificationLocation: {
+  fontSize: 14,
+  color: 'blue',
+  textDecorationLine: 'underline',
+},
 });
 
 export default AttendantHomeScreen;

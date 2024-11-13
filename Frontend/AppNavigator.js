@@ -21,6 +21,7 @@ import Parenthome from './screens/Parenthome';
 import EditAttendantScreen from './screens/EditAttendantScreen';
 import EditStudentScreen from './screens/EditStudentScreen';
 import HelpPage from './screens/HelpPage';
+import MapScreen from './screens/MapScreen';
 
 const Stack = createStackNavigator();
 
@@ -48,6 +49,7 @@ const AppNavigator = () => {
         <Stack.Screen name="PH" component={Parenthome}/>
         <Stack.Screen name="EditAttendantScreen" component={EditAttendantScreen}/>
         <Stack.Screen name="EditStudentScreen" component={EditStudentScreen}/>
+        <Stack.Screen name="Map" component={MapScreen} />
         {/* Add other screens as needed */}
       </Stack.Navigator>
     </NavigationContainer>

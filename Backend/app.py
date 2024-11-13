@@ -37,7 +37,7 @@ def admin_login():
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
-    pass
+
 
 @app.route('/get_attendant_table', methods=['GET'])
 def get_attendant_table():
@@ -319,25 +319,7 @@ def update_live_location():
     except Exception as e:
         db.rollback()
         return jsonify({'error': 'Failed to update live location', 'details': str(e)}), 500
-    
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import mysql.connector
-from mysql.connector import pooling
-from datetime import datetime
 
-app = Flask(__name__)
-CORS(app)
-
-# Set up MySQL connection pooling
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="bts"
-)
-
-cursor = db.cursor(dictionary=True)
 
 @app.route('/send_notification', methods=['POST'])
 def send_notification():
@@ -389,6 +371,50 @@ def get_notifications():
     except mysql.connector.Error as err:
         print(f"Error fetching notifications: {err}")
         return jsonify({'error': 'Failed to fetch notifications'}), 500
+    
+@app.route('/parentget_notifications', methods=['POST'])
+def parentget_notifications():
+    try:
+        data = request.json
+        attender_id = data.get('attender_id')
+
+        # Check if attender_id is provided
+        if not attender_id:
+            return jsonify({'error': 'attender_id is required'}), 400
+
+        # Get the current time and calculate the timestamp for 24 hours ago
+        current_time = datetime.utcnow()
+        time_24_hours_ago = current_time - timedelta(days=1)
+
+        # Query the database for notifications in the last 24 hours
+        cursor.execute("""
+            SELECT * FROM notifications 
+            WHERE attender_id = %s 
+            AND timestamp >= %s
+        """, (attender_id, time_24_hours_ago))
+
+        notifications = cursor.fetchall()
+
+        # If no notifications are found
+        if not notifications:
+            return jsonify({"message": "No notifications found for the last 24 hours"}), 200
+
+        # Prepare the notifications data for the response
+        notifications_data = []
+        for notification in notifications:
+            notifications_data.append({
+                "id": notification['id'],
+                "attender_id": notification['attender_id'],
+                "message": notification['message'],
+                "timestamp": notification['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),
+                "latitude": notification['latitude'],
+                "longitude": notification['longitude']
+            })
+
+        return jsonify({"notifications": notifications_data}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     
 @app.route('/get_location_data', methods=['POST'])
 def get_location_data():

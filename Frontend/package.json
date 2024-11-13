@@ -40,6 +40,7 @@
     "react-native-svg": "^15.8.0",
     "react-native-table-component": "^1.2.2",
     "react-native-vector-icons": "^10.2.0",
+    "react-native-webview": "^13.12.3",
     "twilio": "^5.0.2"
   },
   "devDependencies": {
