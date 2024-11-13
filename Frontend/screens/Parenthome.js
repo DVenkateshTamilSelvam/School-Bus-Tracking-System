@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     notificationMessage: {
         fontSize: 16,
         fontWeight: 'bold',
+        color: 'black'
     },
     notificationTimestamp: {
         fontSize: 14,
