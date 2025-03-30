@@ -56,16 +56,16 @@ const ManageBus = ({ navigation }) => {
     setEditedRouteId(bus.route_id);  // Set route ID
     setModalVisible(true);
   };
-  
+
 
   const handleSaveEdit = async () => {
     if (!selectedBus || !editedBusNumber.trim() || !editedRouteId.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-  
+
     try {
-      await axios.put(`/update_bus/${selectedBus.bus_id}`, {
+      await axios.put(`/bus/update/${selectedBus.bus_id}`, {
         bus_number: editedBusNumber,
         route_id: editedRouteId,
       });
@@ -77,7 +77,7 @@ const ManageBus = ({ navigation }) => {
       Alert.alert('Error', 'Failed to update bus');
     }
   };
-  
+
 
   const AddNew = () => {
     navigation.navigate('BusProfile');
@@ -141,7 +141,7 @@ const ManageBus = ({ navigation }) => {
                       >
                         <Text style={styles.actionText}>Edit</Text>
                       </TouchableOpacity>
-                      
+
                     </View>
                   </View>
                 ))}
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFA500',
     marginRight: 4,
   },
- 
+
   actionText: {
     color: 'white',
   },
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     padding: 10,
     borderRadius: 8,
-    color: 'black'
+    color: 'black',
   },
   modalActions: {
     flexDirection: 'row',

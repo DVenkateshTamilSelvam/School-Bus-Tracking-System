@@ -1,7 +1,8 @@
+/* eslint-disable react/react-in-jsx-scope */
 import { View, Image, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { HelpCircle } from 'lucide-react-native';
 
-const { width, height } = Dimensions.get('window');
+Dimensions.get('window');
 
 const AdminHomeScreen = ({ navigation }) => {
   const handleManageAttendant = () => {
@@ -23,13 +24,12 @@ const AdminHomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       {/* Background Shapes */}
-      <View style={styles.shape1}></View>
-      <View style={styles.shape2}></View>
-      <View style={styles.shape3}></View>
+      <View style={styles.shape1} />
+      <View style={styles.shape2} />
+      <View style={styles.shape3} />
 
       <Text style={styles.heading}>Crafting Tomorrow's Safe Journeys, Today.</Text>
       <Image source={require('../asset/teacher.png')} style={styles.icon} />
-      
       {/* Main Action Buttons */}
       <View style={styles.rowContainer}>
         <TouchableOpacity style={styles.button} onPress={handleManageAttendant}>
@@ -53,7 +53,6 @@ const AdminHomeScreen = ({ navigation }) => {
       </View>
 
       {/* Help Button */}
-    
 
       {/* Bottom Icon */}
       <Image source={require('../asset/drop_down.png')} style={styles.bottomicon} />
@@ -162,7 +161,7 @@ const styles = StyleSheet.create({
     width: 550,
     height: 200,
     bottom: -50,
-    zIndex: -1
+    zIndex: -1,
   },
 });
 

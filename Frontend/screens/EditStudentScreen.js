@@ -40,6 +40,7 @@ const EditStudentScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchStudentDetails();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [student_id]);
 
   const fetchStudentDetails = async () => {
@@ -47,7 +48,7 @@ const EditStudentScreen = ({ route, navigation }) => {
       setLoading(true);
       const response = await axios.get(`/getstudent/${student_id}`);
       const studentData = response.data;
-      
+
       setUsername(studentData.student_name || '');
       setStudentID(studentData.student_id?.toString() || '');
       setClass(studentData.class || '');
@@ -68,7 +69,6 @@ const EditStudentScreen = ({ route, navigation }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
     if (!/^[a-zA-Z\s]+$/.test(username)) {
       newErrors.username = 'Please enter a valid name';
     }
@@ -115,7 +115,7 @@ const EditStudentScreen = ({ route, navigation }) => {
           password: password,
           attendantid: Attendantid,
           busid: BusID,
-          routeid: RouteID
+          routeid: RouteID,
         });
         Alert.alert(
           'Success',
@@ -131,6 +131,7 @@ const EditStudentScreen = ({ route, navigation }) => {
     }
   };
 
+  // eslint-disable-next-line react/no-unstable-nested-components
   const InputField = ({ icon, label, value, onChangeText, error, secureTextEntry = false, keyboardType = 'default', editable = true }) => (
     <View style={styles.inputContainer}>
       <View style={styles.labelContainer}>
@@ -141,7 +142,7 @@ const EditStudentScreen = ({ route, navigation }) => {
         style={[
           styles.input,
           !editable && styles.disabledInput,
-          error && styles.inputError
+          error && styles.inputError,
         ]}
         value={value}
         onChangeText={onChangeText}

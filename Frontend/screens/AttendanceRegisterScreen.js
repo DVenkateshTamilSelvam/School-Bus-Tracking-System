@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import axios from '../component/axiosConfig';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 
@@ -12,9 +12,9 @@ const AttendanceRegisterScreen = ({ attendantId }) => {
   useEffect(() => {
     fetchStudents();
   }, []);
-    
+
   const fetchStudents = () => {
-    axios.get(`/get_student_table`)
+    axios.get('/get_student_table')
       .then(response => {
         setStudents(response.data);
         const initialAttendanceRecords = response.data.map(student => ({
@@ -45,6 +45,7 @@ const AttendanceRegisterScreen = ({ attendantId }) => {
   const saveAttendance = () => {
     const attendanceData = students.map(student => {
       const record = attendanceRecords.find(
+        // eslint-disable-next-line no-shadow
         record => record.student_id === student.student_id
       );
       return {

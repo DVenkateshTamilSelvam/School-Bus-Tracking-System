@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Image, StyleSheet, Text, SafeAreaView, ScrollView, Dimensions, TextInput } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text, Dimensions, TextInput } from 'react-native';
 import axios from '../component/axiosConfig';
 
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const AdminLogin = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -26,7 +26,6 @@ const AdminLogin = ({ navigation }) => {
       <View style={styles.backgroundCircle} />
       <Text style={styles.Admin}>Hello, Admin</Text>
       <Text style={styles.Titles}>SIGN-IN</Text>
-      
       <TextInput
         style={styles.input1}
         placeholder="Username"
@@ -66,8 +65,9 @@ const styles = StyleSheet.create({
     left: -width * 0.25,
     marginTop: 150,
     marginLeft: 20,
+    // eslint-disable-next-line no-dupe-keys
     backgroundColor: '#F46969',
-    zIndex: -1
+    zIndex: -1,
   },
   Admin:{
     color: 'White',
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     marginTop: 150,
     marginBottom: 30,
     fontSize: 30,
-    fontFamily: 'Inter_18pt-Regular'
+    fontFamily: 'Inter_18pt-Regular',
   },
   input1: {
     height: 52,
@@ -91,7 +91,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingLeft: 10,
     marginBottom: 10,
-    
     color: 'grey',
   },
   input2: {
@@ -117,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F46969',
     padding: 20,
     borderRadius: 35,
-  }
+  },
 });
 
 export default AdminLogin;

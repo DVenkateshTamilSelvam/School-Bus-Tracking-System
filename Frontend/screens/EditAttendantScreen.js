@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { User, Phone, MapPin, Key, Calendar, ArrowLeft, Save } from 'lucide-react-native';
 import axios from '../component/axiosConfig';
@@ -20,6 +21,12 @@ const EditAttendantScreen = ({ route, navigation }) => {
   const [contactNumber, setContactNumber] = useState('');
   const [age, setAge] = useState('');
   const [password, setPassword] = useState('');
+
+  // Refs for input fields to manage focus
+  const addressInputRef = useRef(null);
+  const contactInputRef = useRef(null);
+  const ageInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
 
   useEffect(() => {
     fetchAttendantDetails();
@@ -44,13 +51,22 @@ const EditAttendantScreen = ({ route, navigation }) => {
   };
 
   const handleUpdate = async () => {
+    // Dismiss keyboard before update
+    Keyboard.dismiss();
+
+    // Validate inputs
+    if (!username || !address || !contactNumber || !age || !password) {
+      Alert.alert('Error', 'All fields are required');
+      return;
+    }
+
     try {
       setLoading(true);
       await axios.put(`/attender/update/${attendantId}`, {
         attender_name: username,
+        attender_contact: contactNumber,
+        age: parseInt(age),
         address,
-        contact_number: contactNumber,
-        age,
         password,
       });
       Alert.alert(
@@ -59,31 +75,46 @@ const EditAttendantScreen = ({ route, navigation }) => {
         [
           {
             text: 'OK',
-            onPress: () => navigation.goBack()
+            onPress: () => navigation.goBack(),
           }
         ]
       );
     } catch (error) {
       console.error('Error updating attender:', error);
-      Alert.alert('Error', 'Failed to update attendant');
+      Alert.alert('Error', error.response?.data?.details || 'Failed to update attendant');
     } finally {
       setLoading(false);
     }
   };
 
-  const InputField = ({ icon, label, value, onChangeText, secureTextEntry = false, keyboardType = 'default' }) => (
+  // Custom input component with improved keyboard handling
+  const InputField = ({ 
+    icon, 
+    label, 
+    value, 
+    onChangeText, 
+    secureTextEntry = false, 
+    keyboardType = 'default',
+    ref,
+    onSubmitEditing,
+    returnKeyType = 'next'
+  }) => (
     <View style={styles.inputContainer}>
       <View style={styles.labelContainer}>
         {icon}
         <Text style={styles.inputLabel}>{label}</Text>
       </View>
       <TextInput
+        ref={ref}
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         placeholderTextColor="#666"
+        returnKeyType={returnKeyType}
+        onSubmitEditing={onSubmitEditing}
+        blurOnSubmit={false}
       />
     </View>
   );
@@ -111,6 +142,7 @@ const EditAttendantScreen = ({ route, navigation }) => {
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.formContainer}>
           <InputField
@@ -118,6 +150,8 @@ const EditAttendantScreen = ({ route, navigation }) => {
             label="Username"
             value={username}
             onChangeText={setUsername}
+            onSubmitEditing={() => addressInputRef.current.focus()}
+            ref={null}
           />
 
           <InputField
@@ -125,6 +159,8 @@ const EditAttendantScreen = ({ route, navigation }) => {
             label="Address"
             value={address}
             onChangeText={setAddress}
+            ref={addressInputRef}
+            onSubmitEditing={() => contactInputRef.current.focus()}
           />
 
           <InputField
@@ -133,6 +169,8 @@ const EditAttendantScreen = ({ route, navigation }) => {
             value={contactNumber}
             onChangeText={setContactNumber}
             keyboardType="phone-pad"
+            ref={contactInputRef}
+            onSubmitEditing={() => ageInputRef.current.focus()}
           />
 
           <InputField
@@ -141,6 +179,8 @@ const EditAttendantScreen = ({ route, navigation }) => {
             value={age}
             onChangeText={setAge}
             keyboardType="numeric"
+            ref={ageInputRef}
+            onSubmitEditing={() => passwordInputRef.current.focus()}
           />
 
           <InputField
@@ -149,6 +189,9 @@ const EditAttendantScreen = ({ route, navigation }) => {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            ref={passwordInputRef}
+            returnKeyType="done"
+            onSubmitEditing={handleUpdate}
           />
 
           <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
@@ -160,6 +203,7 @@ const EditAttendantScreen = ({ route, navigation }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

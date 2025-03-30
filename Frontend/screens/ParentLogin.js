@@ -13,7 +13,7 @@ const {width, height} = Dimensions.get('window');
     try {
       const response = await axios.post('/api/login', { email, password });
       if (response.data.success) {
-        AsyncStorage.setItem('email', email)
+        AsyncStorage.setItem('email', email),
         navigation.navigate('PH');
       } else {
         setErrorMessage('Invalid email or password. Please try again.');
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     marginBottom: -70,
     width: 420,
     zIndex: -1
-  }
+  },
 });
 
 export default ParentLogin;

@@ -8,7 +8,7 @@ import {
   Alert,
   TextInput,
   Animated,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import { Search, UserPlus, Edit2, Trash2, Phone, MapPin, Key, User } from 'lucide-react-native';
 import axios from '../component/axiosConfig';
@@ -25,8 +25,9 @@ const ManageAttendantScreen = ({ navigation }) => {
       toValue: 1,
       tension: 10,
       friction: 2,
-      useNativeDriver: true
+      useNativeDriver: true,
     }).start();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAttendants = async () => {
@@ -78,13 +79,14 @@ const ManageAttendantScreen = ({ navigation }) => {
     )
   );
 
+  // eslint-disable-next-line react/no-unstable-nested-components
   const AttendantCard = ({ attendant }) => (
     <Animated.View
       style={[
         styles.card,
         {
-          transform: [{ scale: scaleAnim }]
-        }
+          transform: [{ scale: scaleAnim }],
+        },
       ]}
     >
       <View style={styles.cardHeader}>
@@ -160,7 +162,7 @@ const ManageAttendantScreen = ({ navigation }) => {
       {loading ? (
         <ActivityIndicator size="large" color="#F46969" style={styles.loader} />
       ) : (
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
         >

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Dimensions, Alert } from 'react-native';
 import axios from '../component/axiosConfig';
 import {ChevronLeft} from 'lucide-react-native';
 
@@ -66,29 +66,76 @@ const AttenderProfile = ({ navigation }) => {
     return valid;
   };
 
+  const clearFormFields = () => {
+    setUsername('');
+    setAttendantid('');
+    setAddress('');
+    setContactNumber('');
+    setAge('');
+    setPassword('');
+    setErrors({
+      username: '',
+      Attendantid: '',
+      address: '',
+      contactNumber: '',
+      age: '',
+      password: '',
+    });
+  };
+
   const handleLogin = () => {
     if (validateForm()) {
       axios.post('/attender/add', {
         attender_id: Attendantid,
         attender_name: username,
+        attender_contact: contactNumber,
         age: age,
-        contact_number: contactNumber, 
         address: address,
         password: password,
       })
       .then(response => {
-        console.log(response.data);  
-        setSuccessMessage('Attender added successfully');
+        console.log('Success Response:', response.data);
+        
+        // Show alert
+        Alert.alert(
+          'Account Creation Successful', 
+          'Attender account has been created successfully.',
+          [
+            {
+              text: 'OK', 
+              onPress: () => {
+                // Clear form fields after successful creation
+                clearFormFields();
+                // Optionally navigate back or to another screen
+                // navigation.goBack();
+              }
+            }
+          ]
+        );
       })
       .catch(error => {
-        console.error('Error adding attender:', error);
-        setError('Error adding attender');
+        console.error('Full Error Object:', error);
+        console.error('Error Response:', error.response);
+        console.error('Error Request:', error.request);
+
+        if (error.response) {
+          Alert.alert(
+            'Error', 
+            error.response.data.details 
+              ? error.response.data.details.join('\n') 
+              : error.response.data.error
+          );
+        } else if (error.request) {
+          Alert.alert('Error', 'No response received from server');
+        } else {
+          Alert.alert('Error', 'Error setting up the request');
+        }
       });
     }
-  }; 
+  };
 
   const handleBack = () => {
-    navigation.goBack(); 
+    navigation.goBack();
   };
 
   return (
@@ -161,7 +208,6 @@ const AttenderProfile = ({ navigation }) => {
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Submit</Text>
       </TouchableOpacity>
-      {successMessage !== '' && <Text style={styles.successMessage}>{successMessage}</Text>}
     </ScrollView>
   );
 };

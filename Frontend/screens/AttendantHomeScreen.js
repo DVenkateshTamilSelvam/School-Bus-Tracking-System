@@ -15,10 +15,11 @@ const AttendantHomeScreen = ({ navigation, route }) => {
   const [isLiveLocationOn, setLiveLocationOn] = useState(false);
   const [location, setLocation] = useState(null);
   const [isLoading, setLoading] = useState(false);
-  const { attender_id } = route.params; 
+  const { attender_id } = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   const [inputText, setInputText] = useState('');
-  const [notificationSent, setNotificationSent] = useState(false); // For success message
+  // eslint-disable-next-line no-unused-vars
+  const [notificationSent, setNotificationSent] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   const openModal = () => {
@@ -33,66 +34,74 @@ const AttendantHomeScreen = ({ navigation, route }) => {
   const handleSend = async () => {
     try {
       if (!inputText) {
-        console.warn("Please enter a message.");
+        Alert.alert('Error', 'Please enter a message');
         return;
       }
   
-      const timestamp = new Date().toISOString(); // Current timestamp
-      const data = {
+      const timestamp = new Date().toISOString();
+      const notificationData = {
         attender_id,
         message: inputText,
         timestamp,
         gps_data: location ? {
           latitude: location.coords.latitude,
-          longitude: location.coords.longitude
-        } : null
+          longitude: location.coords.longitude,
+        } : null,
       };
   
-      // Send data to the backend API endpoint
-      await axios.post('/send_notification', data);
+      // Send notification with location
+      await axios.post('/send_notification', notificationData);
   
-      console.log("Notification sent to server:", data);
-      closeModal(); // Close modal after sending
+      // Optional: Show success message
+      Alert.alert('Success', 'Notification sent successfully');
+      
+      // Reset input and close modal
+      setInputText('');
+      closeModal();
     } catch (error) {
-      console.error('Error sending notification:', error);
+      console.error('Notification sending error:', error);
+      Alert.alert('Error', 'Failed to send notification');
     }
   };
-  
+
+
   useEffect(() => {
+    let watchId;
     const startLocationTracking = async () => {
       try {
-        setLoading(true); // Set loading to true when tracking starts
         await requestLocationPermission();
-        const watchId = Geolocation.watchPosition(
+        watchId = Geolocation.watchPosition(
           async (position) => {
             setLocation(position);
-            setLoading(false); // Set loading to false when location is obtained
+
+            // Send location to server more efficiently
+            await sendLocationToServer(position);
           },
           (error) => {
-            console.error('Error getting location:', error);
-            setLoading(false); // Set loading to false on error
+            console.error('Location tracking error:', error);
           },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 } // Increased timeout
+          {
+            enableHighAccuracy: true, 
+            distanceFilter: 10, // Update only if moved 10 meters
+            interval: 30000, // Check every 30 seconds
+            fastestInterval: 10000 // Fastest update interval
+          }
         );
-        return watchId;
       } catch (error) {
-        console.error('Permission denied:', error);
+        console.error('Location tracking setup error:', error);
       }
     };
 
-    let watchId;
-
     if (isLiveLocationOn) {
-      startLocationTracking().then((id) => (watchId = id));
-
-      // Cleanup: Clear the timer when the component unmounts or live location is turned off
-      return () => {
-        stopLocationTracking(watchId);
-      };
-    } else {
-      stopLocationTracking(watchId);
+      startLocationTracking();
     }
 
+    // Cleanup function
+    return () => {
+      if (watchId) {
+        Geolocation.clearWatch(watchId);
+      }
+    };
   }, [isLiveLocationOn]);
 
   const toggleLiveLocation = () => {
@@ -141,30 +150,25 @@ const AttendantHomeScreen = ({ navigation, route }) => {
       }, 2000); // Adjust interval as needed
       return () => clearInterval(intervalId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLiveLocationOn, location]);
 
   const sendLocationToServer = async (position) => {
     try {
       const { latitude, longitude } = position.coords;
-      const timestamp = new Date().toISOString(); // Current timestamp
+      const timestamp = new Date().toISOString();
       const data = {
         attender_id,
         latitude,
         longitude,
         timestamp,
       };
-
-      if (!location) {
-        // Send the initial location data to the backend API for insertion
-        await axios.post('/insert_gps_data', data);
-      } else {
-        // Send subsequent location updates to the backend API for updating
-        await axios.post('/update_live_location', data);
-      }
-
-      console.log('Location data sent to server:', data);
+  
+      const response = await axios.post('/update_live_location', data);
+      console.log('Location data sent successfully:', response.data);
     } catch (error) {
-      console.error('Error sending location data to server:', error);
+      console.error('Error sending location data:', error.response?.data || error.message);
+      // Optionally show an error toast or alert
     }
   };
 
@@ -241,7 +245,7 @@ const AttendantHomeScreen = ({ navigation, route }) => {
               placeholder="Enter your message"
               value={inputText}
               onChangeText={setInputText}
-              placeholderTextColor={"black"}
+              placeholderTextColor={'black'}
             />
             <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
               <Text style={styles.sendButtonText}>Send</Text>
@@ -284,7 +288,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   greenbutton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
     paddingHorizontal: 35,
     paddingVertical: 18,
     borderRadius: 55,
